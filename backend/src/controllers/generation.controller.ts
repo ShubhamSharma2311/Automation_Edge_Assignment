@@ -7,7 +7,7 @@ import { GenerateCodeRequest } from '../types';
 export class GenerationController {
   async generate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { prompt, language } = req.body as GenerateCodeRequest;
+      const { prompt, languageId } = req.body;
       const userId = req.user?.userId;
 
       if (!userId) {
@@ -18,21 +18,21 @@ export class GenerationController {
       }
 
       // Verify language exists
-      const languageExists = await languageService.getLanguageByCode(language);
-      if (!languageExists) {
+      const language = await languageService.getLanguageById(languageId);
+      if (!language) {
         return res.status(400).json({
           error: 'Invalid Language',
-          message: `Language '${language}' is not supported. Please use a valid language code.`,
+          message: `Language with ID '${languageId}' not found. Please use a valid language ID.`,
         });
       }
 
       // Generate code using Gemini AI
-      const generatedCode = await geminiService.generateCode(prompt, languageExists.name);
+      const generatedCode = await geminiService.generateCode(prompt, language.name);
 
       // Save to database with userId
       const generation = await generationService.createGeneration({
         prompt,
-        language,
+        languageId,
         code: generatedCode,
         userId,
       });

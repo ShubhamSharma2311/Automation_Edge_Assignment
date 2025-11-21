@@ -5,7 +5,7 @@ export const generateCodeSchema = z.object({
     .string()
     .min(10, 'Prompt must be at least 10 characters long')
     .max(1000, 'Prompt must be less than 1000 characters'),
-  language: z.string().min(1, 'Language is required'),
+  languageId: z.number().int().positive('Language ID must be a positive integer'),
 });
 
 export const historyQuerySchema = z.object({

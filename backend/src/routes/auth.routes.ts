@@ -36,4 +36,13 @@ router.get(
   authController.getCurrentUser
 );
 
+/**
+ * POST /api/auth/logout
+ * Logout user (clear cookie)
+ */
+router.post(
+  '/logout',
+  authController.logout
+);
+
 export default router;

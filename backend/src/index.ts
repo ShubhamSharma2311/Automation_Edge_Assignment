@@ -1,5 +1,6 @@
 import express, { Application } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { config } from './config/env';
 import routes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
@@ -11,6 +12,7 @@ app.use(cors({
   origin: config.corsOrigin,
   credentials: true,
 }));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

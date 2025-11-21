@@ -39,6 +39,25 @@ export class LanguageService {
       throw new Error('Failed to fetch language');
     }
   }
+
+  async getLanguageById(id: number): Promise<Language | null> {
+    try {
+      const language = await prisma.language.findUnique({
+        where: { id },
+      });
+
+      if (!language) return null;
+
+      return {
+        id: language.id,
+        name: language.name,
+        code: language.slug,
+      };
+    } catch (error) {
+      console.error('Error fetching language by ID:', error);
+      throw new Error('Failed to fetch language');
+    }
+  }
 }
 
 export default new LanguageService();

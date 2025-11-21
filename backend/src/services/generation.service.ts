@@ -2,23 +2,14 @@ import prisma from '../config/database';
 import { GenerateCodeRequest, GenerateCodeResponse, PaginatedHistory } from '../types';
 
 export class GenerationService {
-  async createGeneration(data: GenerateCodeRequest & { code: string; userId: number }): Promise<GenerateCodeResponse> {
+  async createGeneration(data: { prompt: string; languageId: number; code: string; userId: number }): Promise<GenerateCodeResponse> {
     try {
-      // First, verify the language exists in the database
-      const language = await prisma.language.findUnique({
-        where: { slug: data.language },
-      });
-
-      if (!language) {
-        throw new Error(`Language '${data.language}' is not supported`);
-      }
-
       // Create the generation with language relationship and userId
       const generation = await prisma.generation.create({
         data: {
           prompt: data.prompt,
           code: data.code,
-          languageId: language.id,
+          languageId: data.languageId,
           userId: data.userId,
         },
         include: {

@@ -8,9 +8,17 @@ export class AuthController {
 
       const result = await authService.signup({ email, password, name });
 
+      // Set token in HTTP-only cookie
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
       res.status(201).json({
         success: true,
-        data: result,
+        data: { user: result.user },
         message: 'User registered successfully',
       });
     } catch (error: any) {
@@ -31,9 +39,17 @@ export class AuthController {
 
       const result = await authService.login({ email, password });
 
+      // Set token in HTTP-only cookie
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
       res.status(200).json({
         success: true,
-        data: result,
+        data: { user: result.user },
         message: 'Login successful',
       });
     } catch (error: any) {
@@ -72,6 +88,25 @@ export class AuthController {
       });
     } catch (error) {
       console.error('Error in getCurrentUser controller:', error);
+      next(error);
+    }
+  }
+
+  async logout(req: Request, res: Response, next: NextFunction) {
+    try {
+      // Clear the token cookie
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Logout successful',
+      });
+    } catch (error) {
+      console.error('Error in logout controller:', error);
       next(error);
     }
   }

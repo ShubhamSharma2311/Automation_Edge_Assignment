@@ -15,7 +15,7 @@ declare global {
 
 /**
  * Middleware to authenticate requests using JWT token
- * Expects token in Authorization header as "Bearer <token>"
+ * Expects token in cookie or Authorization header as "Bearer <token>"
  */
 export const authenticate = async (
   req: Request,
@@ -23,17 +23,23 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.authorization;
+    // Get token from cookie first, then fall back to Authorization header
+    let token = req.cookies?.token;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
+      // Try to get token from Authorization header
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7); // Remove 'Bearer ' prefix
+      }
+    }
+
+    if (!token) {
       return res.status(401).json({
         error: 'Unauthorized',
         message: 'No token provided. Please login first.',
       });
     }
-
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
     // Verify token
     const decoded = verifyToken(token);
