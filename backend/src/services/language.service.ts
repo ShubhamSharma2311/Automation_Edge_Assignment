@@ -13,7 +13,7 @@ export class LanguageService {
       return languages.map((lang) => ({
         id: lang.id,
         name: lang.name,
-        code: lang.code,
+        code: lang.slug,
       }));
     } catch (error) {
       console.error('Error fetching languages:', error);
@@ -24,7 +24,7 @@ export class LanguageService {
   async getLanguageByCode(code: string): Promise<Language | null> {
     try {
       const language = await prisma.language.findUnique({
-        where: { code },
+        where: { slug: code },
       });
 
       if (!language) return null;
@@ -32,7 +32,7 @@ export class LanguageService {
       return {
         id: language.id,
         name: language.name,
-        code: language.code,
+        code: language.slug,
       };
     } catch (error) {
       console.error('Error fetching language:', error);

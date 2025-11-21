@@ -7,7 +7,11 @@ if (!process.env.GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const getGeminiModel = () => {
-  return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  // Using gemini-2.5-flash - stable, fast, supports up to 1M tokens
+  // You can override this by setting GEMINI_MODEL in your .env file
+  const modelName = process.env.GEMINI_MODEL || 'models/gemini-2.5-flash';
+  console.log(`Using Gemini model: ${modelName}`);
+  return genAI.getGenerativeModel({ model: modelName });
 };
 
 export default genAI;
