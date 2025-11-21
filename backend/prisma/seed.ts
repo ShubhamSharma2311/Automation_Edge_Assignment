@@ -1,0 +1,40 @@
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log('Seeding database...');
+
+  // Languages to seed
+  const languages = [
+    { name: 'Python', slug: 'python' },
+    { name: 'JavaScript', slug: 'javascript' },
+    { name: 'TypeScript', slug: 'typescript' },
+    { name: 'Java', slug: 'java' },
+    { name: 'C++', slug: 'cpp' },
+    { name: 'C#', slug: 'csharp' },
+    { name: 'Go', slug: 'go' },
+    { name: 'Rust', slug: 'rust' },
+  ];
+
+  // Use upsert to avoid duplicates
+  for (const language of languages) {
+    await prisma.language.upsert({
+      where: { slug: language.slug },
+      update: {},
+      create: language,
+    });
+    console.log(`✓ Created/Updated language: ${language.name}`);
+  }
+
+  console.log('Seeding completed successfully!');
+}
+
+main()
+  .catch((e) => {
+    console.error('Error seeding database:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

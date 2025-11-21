@@ -5,26 +5,38 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-   provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
+// Language table stores supported programming languages
+// This is a lookup/reference table to normalize language data
 model Language {
   id          Int          @id @default(autoincrement())
-  name        String       @unique
-  slug        String       @unique
+  name        String       @unique // Display name (e.g., "Python", "JavaScript")
+  slug        String       @unique // URL-safe identifier (e.g., "python", "javascript")
+  createdAt   DateTime     @default(now())
   generations Generation[]
+
+  @@map("languages")
 }
 
+// Generation table stores each code generation request and result
+// Foreign key relationship with Language table ensures data integrity
 model Generation {
   id         Int      @id @default(autoincrement())
-  prompt     String
-  code       String   @db.Text
+  prompt     String   @db.Text // User's natural language prompt
+  code       String   @db.Text // AI-generated code
   createdAt  DateTime @default(now())
   languageId Int
   language   Language @relation(fields: [languageId], references: [id])
+
+  // Index on createdAt for efficient pagination and sorting
+  // Index on languageId for efficient filtering by language
+  @@index([createdAt(sort: Desc)])
+  @@index([languageId])
+  @@map("generations")
 }
