@@ -2,7 +2,7 @@ import prisma from '../config/database';
 import { GenerateCodeRequest, GenerateCodeResponse, PaginatedHistory } from '../types';
 
 export class GenerationService {
-  async createGeneration(data: GenerateCodeRequest & { code: string }): Promise<GenerateCodeResponse> {
+  async createGeneration(data: GenerateCodeRequest & { code: string; userId: number }): Promise<GenerateCodeResponse> {
     try {
       // First, verify the language exists in the database
       const language = await prisma.language.findUnique({
@@ -13,12 +13,13 @@ export class GenerationService {
         throw new Error(`Language '${data.language}' is not supported`);
       }
 
-      // Create the generation with language relationship
+      // Create the generation with language relationship and userId
       const generation = await prisma.generation.create({
         data: {
           prompt: data.prompt,
           code: data.code,
           languageId: language.id,
+          userId: data.userId,
         },
         include: {
           language: true,
@@ -38,18 +39,22 @@ export class GenerationService {
     }
   }
 
-  async getHistory(page: number = 1, limit: number = 10): Promise<PaginatedHistory> {
+  async getHistory(page: number = 1, limit: number = 10, userId?: number): Promise<PaginatedHistory> {
     try {
       // Ensure valid pagination parameters
       const validPage = Math.max(1, page);
       const validLimit = Math.min(Math.max(1, limit), 50); // Max 50 items per page
       const skip = (validPage - 1) * validLimit;
 
+      // Build where clause - filter by userId if provided
+      const where = userId ? { userId } : {};
+
       // Get total count
-      const totalItems = await prisma.generation.count();
+      const totalItems = await prisma.generation.count({ where });
 
       // Get paginated data
       const generations = await prisma.generation.findMany({
+        where,
         skip,
         take: validLimit,
         orderBy: {

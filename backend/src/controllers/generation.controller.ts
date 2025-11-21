@@ -8,6 +8,14 @@ export class GenerationController {
   async generate(req: Request, res: Response, next: NextFunction) {
     try {
       const { prompt, language } = req.body as GenerateCodeRequest;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not authenticated',
+        });
+      }
 
       // Verify language exists
       const languageExists = await languageService.getLanguageByCode(language);
@@ -21,11 +29,12 @@ export class GenerationController {
       // Generate code using Gemini AI
       const generatedCode = await geminiService.generateCode(prompt, languageExists.name);
 
-      // Save to database
+      // Save to database with userId
       const generation = await generationService.createGeneration({
         prompt,
         language,
         code: generatedCode,
+        userId,
       });
 
       res.status(201).json({
@@ -42,8 +51,16 @@ export class GenerationController {
     try {
       const page = req.query.page ? Number(req.query.page) : 1;
       const limit = req.query.limit ? Number(req.query.limit) : 10;
+      const userId = req.user?.userId;
 
-      const history = await generationService.getHistory(page, limit);
+      if (!userId) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not authenticated',
+        });
+      }
+
+      const history = await generationService.getHistory(page, limit, userId);
 
       res.status(200).json({
         success: true,

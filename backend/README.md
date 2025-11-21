@@ -1,4 +1,4 @@
-# Code Generation Copilot - Backend
+# Code Generation Co-pilot - Backend
 
 A robust Node.js backend API for an AI-powered code generation application using TypeScript, Express, Prisma, PostgreSQL, and Google's Gemini AI.
 
