@@ -83,11 +83,12 @@ class GenerationService {
     return request;
   }
 
-  async getHistory(page: number = 1, limit: number = 10): Promise<HistoryResponse> {
-    console.log('Getting history with params:', { page, limit });
-    const response = await api.get('/api/history', {
-      params: { page, limit },
-    });
+  async getHistory(page: number = 1, limit: number = 10, languageId?: number): Promise<HistoryResponse> {
+    console.log('Getting history with params:', { page, limit, languageId });
+    const params: { page: number; limit: number; languageId?: number } = { page, limit };
+    if (languageId) params.languageId = languageId;
+    
+    const response = await api.get('/api/history', { params });
     console.log('History API response:', response.data);
     return response.data;
   }

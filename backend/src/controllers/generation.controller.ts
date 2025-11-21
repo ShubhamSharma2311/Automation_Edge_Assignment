@@ -61,13 +61,15 @@ export class GenerationController {
       // Parse and validate query parameters manually
       const pageParam = req.query.page as string | undefined;
       const limitParam = req.query.limit as string | undefined;
+      const languageIdParam = req.query.languageId as string | undefined;
       
       const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
       const limit = limitParam ? Math.min(50, Math.max(1, parseInt(limitParam, 10) || 5)) : 5;
+      const languageId = languageIdParam ? parseInt(languageIdParam, 10) : undefined;
 
-      console.log('Fetching history for user:', userId, 'page:', page, 'limit:', limit);
+      console.log('Fetching history for user:', userId, 'page:', page, 'limit:', limit, 'languageId:', languageId);
 
-      const history = await generationService.getHistory(page, limit, userId);
+      const history = await generationService.getHistory(page, limit, userId, languageId);
 
       console.log('History fetched:', history);
 

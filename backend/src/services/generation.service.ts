@@ -30,15 +30,17 @@ export class GenerationService {
     }
   }
 
-  async getHistory(page: number = 1, limit: number = 10, userId?: number): Promise<PaginatedHistory> {
+  async getHistory(page: number = 1, limit: number = 10, userId?: number, languageId?: number): Promise<PaginatedHistory> {
     try {
       // Ensure valid pagination parameters
       const validPage = Math.max(1, page);
       const validLimit = Math.min(Math.max(1, limit), 50); // Max 50 items per page
       const skip = (validPage - 1) * validLimit;
 
-      // Build where clause - filter by userId if provided
-      const where = userId ? { userId } : {};
+      // Build where clause - filter by userId and languageId if provided
+      const where: any = {};
+      if (userId) where.userId = userId;
+      if (languageId) where.languageId = languageId;
 
       // Get total count
       const totalItems = await prisma.generation.count({ where });

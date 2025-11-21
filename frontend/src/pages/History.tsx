@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useAuth } from '../hooks/useAuth';
-import generationService, { type Generation } from '../services/generation.service';
+import generationService, { type Generation, type Language } from '../services/generation.service';
 
 const History: React.FC = () => {
   const [generations, setGenerations] = useState<Generation[]>([]);
+  const [languages, setLanguages] = useState<Language[]>([]);
+  const [selectedLanguageId, setSelectedLanguageId] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -15,16 +17,12 @@ const History: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchHistory(currentPage);
-  }, [currentPage]);
-
   const fetchHistory = async (page: number) => {
     setLoading(true);
     setError('');
     try {
-      console.log('Fetching history for page:', page);
-      const response = await generationService.getHistory(page, 5);
+      console.log('Fetching history for page:', page, 'languageId:', selectedLanguageId);
+      const response = await generationService.getHistory(page, 5, selectedLanguageId);
       console.log('History response:', response);
       
       if (response && response.data && Array.isArray(response.data)) {
@@ -45,6 +43,23 @@ const History: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        const langs = await generationService.getLanguages();
+        setLanguages(langs);
+      } catch (err) {
+        console.error('Failed to fetch languages:', err);
+      }
+    };
+    fetchLanguages();
+  }, []);
+
+  useEffect(() => {
+    fetchHistory(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, selectedLanguageId]);
 
   const handleLogout = async () => {
     await logout();
@@ -112,6 +127,34 @@ const History: React.FC = () => {
             <h2 className="text-xl font-semibold text-gray-900">
               Your Code Generations ({totalItems})
             </h2>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedLanguageId || ''}
+                onChange={(e) => {
+                  setSelectedLanguageId(e.target.value ? Number(e.target.value) : undefined);
+                  setCurrentPage(1);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Languages</option>
+                {languages.map((lang) => (
+                  <option key={lang.id} value={lang.id}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
+              {selectedLanguageId && (
+                <button
+                  onClick={() => {
+                    setSelectedLanguageId(undefined);
+                    setCurrentPage(1);
+                  }}
+                  className="px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Clear Filter
+                </button>
+              )}
+            </div>
           </div>
 
           {error && (
