@@ -12,11 +12,21 @@ const Generate: React.FC = () => {
   const [generatedCode, setGeneratedCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false); // Prevent double requests
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchLanguages();
+    let isMounted = true;
+    const loadLanguages = async () => {
+      if (isMounted) {
+        await fetchLanguages();
+      }
+    };
+    loadLanguages();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const fetchLanguages = async () => {
@@ -37,8 +47,15 @@ const Generate: React.FC = () => {
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent duplicate requests
+    if (isGenerating || loading) {
+      return;
+    }
+
     setError('');
     setLoading(true);
+    setIsGenerating(true);
     setGeneratedCode('');
 
     try {
@@ -52,6 +69,8 @@ const Generate: React.FC = () => {
       setError(error.response?.data?.message || 'Failed to generate code. Please try again.');
     } finally {
       setLoading(false);
+      // Add a small delay before allowing next request
+      setTimeout(() => setIsGenerating(false), 1000);
     }
   };
 
@@ -64,7 +83,7 @@ const Generate: React.FC = () => {
     navigator.clipboard.writeText(generatedCode);
   };
 
-  const getLanguageForHighlighter = (languageCode: string) => {
+  const getLanguageForHighlighter = () => {
     const languageMap: Record<string, string> = {
       'python': 'python',
       'javascript': 'javascript',
@@ -158,7 +177,7 @@ const Generate: React.FC = () => {
 
               <button
                 type="submit"
-                disabled={loading || !prompt.trim() || prompt.length < 10}
+                disabled={loading || isGenerating || !prompt.trim() || prompt.length < 10}
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 {loading ? 'Generating...' : 'Generate Code'}
@@ -190,7 +209,7 @@ const Generate: React.FC = () => {
             ) : generatedCode ? (
               <div className="rounded-lg overflow-hidden border border-gray-200">
                 <SyntaxHighlighter
-                  language={getLanguageForHighlighter(selectedLanguage.toString())}
+                  language={getLanguageForHighlighter()}
                   style={vscDarkPlus}
                   showLineNumbers
                   customStyle={{

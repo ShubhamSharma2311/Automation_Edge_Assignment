@@ -33,14 +33,54 @@ export interface HistoryResponse {
 }
 
 class GenerationService {
+  private languagesCache: Language[] | null = null;
+  private pendingLanguagesRequest: Promise<Language[]> | null = null;
+  private pendingGenerateRequests: Map<string, Promise<Generation>> = new Map();
+
   async getLanguages(): Promise<Language[]> {
-    const response = await api.get('/api/languages');
-    return response.data.data;
+    // Return cached languages if available
+    if (this.languagesCache) {
+      return this.languagesCache;
+    }
+    
+    // Check if there's already a pending request
+    if (this.pendingLanguagesRequest) {
+      return this.pendingLanguagesRequest;
+    }
+
+    // Create new request
+    this.pendingLanguagesRequest = api.get('/api/languages').then((response) => {
+      this.languagesCache = response.data.data;
+      this.pendingLanguagesRequest = null;
+      return this.languagesCache!;
+    }).catch((error) => {
+      this.pendingLanguagesRequest = null;
+      throw error;
+    });
+
+    return this.pendingLanguagesRequest;
   }
 
   async generateCode(data: GenerateCodeRequest): Promise<Generation> {
-    const response = await api.post('/api/generate', data);
-    return response.data.data;
+    // Create unique key for this request
+    const requestKey = `${data.languageId}-${data.prompt.substring(0, 50)}`;
+    
+    // Check if there's already a pending identical request
+    if (this.pendingGenerateRequests.has(requestKey)) {
+      return this.pendingGenerateRequests.get(requestKey)!;
+    }
+
+    // Create new request
+    const request = api.post('/api/generate', data).then((response) => {
+      this.pendingGenerateRequests.delete(requestKey);
+      return response.data.data;
+    }).catch((error) => {
+      this.pendingGenerateRequests.delete(requestKey);
+      throw error;
+    });
+
+    this.pendingGenerateRequests.set(requestKey, request);
+    return request;
   }
 
   async getHistory(page: number = 1, limit: number = 10): Promise<HistoryResponse> {
