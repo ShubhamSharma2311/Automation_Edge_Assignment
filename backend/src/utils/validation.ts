@@ -9,9 +9,15 @@ export const generateCodeSchema = z.object({
 });
 
 export const historyQuerySchema = z.object({
-  page: z.coerce.number().positive().optional().default(1),
-  limit: z.coerce.number().positive().max(50).optional().default(10),
-});
+  page: z.string().optional().transform(val => {
+    const num = val ? parseInt(val, 10) : 1;
+    return isNaN(num) || num < 1 ? 1 : num;
+  }),
+  limit: z.string().optional().transform(val => {
+    const num = val ? parseInt(val, 10) : 10;
+    return isNaN(num) || num < 1 ? 10 : Math.min(num, 50);
+  }),
+}).passthrough();
 
 export const signupSchema = z.object({
   email: z.string().email('Invalid email address'),

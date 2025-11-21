@@ -84,9 +84,11 @@ class GenerationService {
   }
 
   async getHistory(page: number = 1, limit: number = 10): Promise<HistoryResponse> {
+    console.log('Getting history with params:', { page, limit });
     const response = await api.get('/api/history', {
       params: { page, limit },
     });
+    console.log('History API response:', response.data);
     return response.data;
   }
 }

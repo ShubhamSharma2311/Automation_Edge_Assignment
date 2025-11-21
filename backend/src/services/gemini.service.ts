@@ -9,7 +9,17 @@ export class GeminiService {
 
   async generateCode(prompt: string, language: string): Promise<string> {
     try {
-      const enhancedPrompt = `You are an expert programmer. Generate clean, well-commented ${language} code for the following request. Only return the code without any explanations or markdown formatting:\n\n${prompt}`;
+      const enhancedPrompt = `You are an expert programmer. Generate CONCISE, CLEAN ${language} code for the following request.
+
+IMPORTANT RULES:
+- Keep the code SHORT and SIMPLE - avoid over-engineering
+- Add ONLY essential comments (1-2 lines max) - NO lengthy explanations
+- NO repetitive overloads or unnecessary template variations
+- Focus on the MOST PRACTICAL and COMMONLY USED implementation
+- Return ONLY the code - NO markdown, NO explanations outside the code
+- If multiple approaches exist, choose the SIMPLEST one
+
+Request: ${prompt}`;
 
       const result = await this.model.generateContent(enhancedPrompt);
       const response = result.response;

@@ -139,7 +139,6 @@ router.post(
 router.get(
   '/history',
   authenticate,
-  validateQuery(historyQuerySchema),
   (req, res, next) => generationController.getHistory(req, res, next)
 );
 

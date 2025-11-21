@@ -49,8 +49,6 @@ export class GenerationController {
 
   async getHistory(req: Request, res: Response, next: NextFunction) {
     try {
-      const page = req.query.page ? Number(req.query.page) : 1;
-      const limit = req.query.limit ? Number(req.query.limit) : 10;
       const userId = req.user?.userId;
 
       if (!userId) {
@@ -60,7 +58,18 @@ export class GenerationController {
         });
       }
 
+      // Parse and validate query parameters manually
+      const pageParam = req.query.page as string | undefined;
+      const limitParam = req.query.limit as string | undefined;
+      
+      const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
+      const limit = limitParam ? Math.min(50, Math.max(1, parseInt(limitParam, 10) || 5)) : 5;
+
+      console.log('Fetching history for user:', userId, 'page:', page, 'limit:', limit);
+
       const history = await generationService.getHistory(page, limit, userId);
+
+      console.log('History fetched:', history);
 
       res.status(200).json({
         success: true,

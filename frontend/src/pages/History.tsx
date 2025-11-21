@@ -11,6 +11,7 @@ const History: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [error, setError] = useState('');
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -20,13 +21,26 @@ const History: React.FC = () => {
 
   const fetchHistory = async (page: number) => {
     setLoading(true);
+    setError('');
     try {
-      const response = await generationService.getHistory(page, 10);
-      setGenerations(response.data);
-      setTotalPages(response.pagination.totalPages);
-      setTotalItems(response.pagination.totalItems);
+      console.log('Fetching history for page:', page);
+      const response = await generationService.getHistory(page, 5);
+      console.log('History response:', response);
+      
+      if (response && response.data && Array.isArray(response.data)) {
+        setGenerations(response.data);
+        setTotalPages(response.pagination?.totalPages || 1);
+        setTotalItems(response.pagination?.totalItems || 0);
+      } else {
+        console.error('Invalid response format:', response);
+        setGenerations([]);
+        setError('Invalid response format from server');
+      }
     } catch (err) {
       console.error('Failed to fetch history:', err);
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      setError(errorObj.response?.data?.message || 'Failed to load history');
+      setGenerations([]);
     } finally {
       setLoading(false);
     }
@@ -99,6 +113,12 @@ const History: React.FC = () => {
               Your Code Generations ({totalItems})
             </h2>
           </div>
+
+          {error && (
+            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
