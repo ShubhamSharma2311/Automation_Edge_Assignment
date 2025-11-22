@@ -4,7 +4,8 @@ A full-stack web application that leverages Google's Gemini AI to generate code 
 
 ## Live Demo
 
-**Deployment URL:** [(https://automation-edge-assignment.vercel.app/)]
+**Deployment URL:** (https://automation-edge-assignment.vercel.app/) 
+   (please wait for sometime becuase the initial response may take time due to server cold restart)
 
 **Video Demo:** [Add your 2-3 min video link here]
 
