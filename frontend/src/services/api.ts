@@ -15,8 +15,12 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Redirect to login on unauthorized
+    // Only redirect if we're not already on the login or signup page
+    // and it's not the /me endpoint (initial auth check)
+    if (error.response?.status === 401 && 
+        !window.location.pathname.includes('/login') && 
+        !window.location.pathname.includes('/signup') &&
+        !error.config?.url?.includes('/auth/me')) {
       window.location.href = '/login';
     }
     return Promise.reject(error);
