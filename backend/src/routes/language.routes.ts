@@ -36,4 +36,19 @@ router.get(
   (req, res, next) => languageController.getAllLanguages(req, res, next)
 );
 
+/**
+ * @swagger
+ * /api/languages/seed:
+ *   post:
+ *     summary: Seed languages into database (admin use)
+ *     tags: [Languages]
+ *     responses:
+ *       200:
+ *         description: Languages seeded successfully
+ */
+router.post(
+  '/languages/seed',
+  (req, res, next) => languageController.seedLanguages(req, res, next)
+);
+
 export default router;

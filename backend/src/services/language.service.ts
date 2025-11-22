@@ -58,6 +58,40 @@ export class LanguageService {
       throw new Error('Failed to fetch language');
     }
   }
+
+  async seedLanguages(): Promise<Language[]> {
+    try {
+      const languages = [
+        { name: 'Python', slug: 'python' },
+        { name: 'JavaScript', slug: 'javascript' },
+        { name: 'TypeScript', slug: 'typescript' },
+        { name: 'Java', slug: 'java' },
+        { name: 'C++', slug: 'cpp' },
+        { name: 'C#', slug: 'csharp' },
+        { name: 'Go', slug: 'go' },
+        { name: 'Rust', slug: 'rust' },
+      ];
+
+      const seededLanguages = [];
+      for (const language of languages) {
+        const result = await prisma.language.upsert({
+          where: { slug: language.slug },
+          update: {},
+          create: language,
+        });
+        seededLanguages.push({
+          id: result.id,
+          name: result.name,
+          code: result.slug,
+        });
+      }
+
+      return seededLanguages;
+    } catch (error) {
+      console.error('Error seeding languages:', error);
+      throw new Error('Failed to seed languages');
+    }
+  }
 }
 
 export default new LanguageService();
