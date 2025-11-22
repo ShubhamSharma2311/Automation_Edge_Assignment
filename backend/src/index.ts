@@ -9,15 +9,49 @@ import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
 const app: Application = express();
 
-// Middleware
-app.use(cors({
-  origin: config.corsOrigin,
+// CORS Configuration
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps, Postman)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // List of allowed origins for local development
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:5000',
+    ];
+
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Allow all Vercel preview and production deployments
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+
+    // Check if config allows all origins
+    if (config.corsOrigin === '*') {
+      return callback(null, true);
+    }
+
+    // If none of the above, block the request
+    console.log('CORS blocked origin:', origin);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Set-Cookie'],
-  maxAge: 86400, // 24 hours
-}));
+  optionsSuccessStatus: 204,
+};
+
+// Middleware
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
