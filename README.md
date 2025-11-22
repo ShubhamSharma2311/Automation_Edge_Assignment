@@ -4,13 +4,9 @@ A full-stack web application that leverages Google's Gemini AI to generate code 
 
 ## Live Demo
 
-**Deployment URL:** [Add your deployment link here]
+**Deployment URL:** [(https://automation-edge-assignment.vercel.app/)]
 
 **Video Demo:** [Add your 2-3 min video link here]
-
-**Demo Credentials:**
-- Email: demo@example.com
-- Password: demo123
 
 ---
 
